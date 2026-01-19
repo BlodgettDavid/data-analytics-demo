@@ -1,0 +1,6 @@
+duckdb
+dbt-duckdb
+mysql-connector-python
+pymongo
+pandas
+python-dotenv

@@ -1,0 +1,34 @@
+[
+  {
+    "event_id": "evt_1001",
+    "customer_id": 1,
+    "event_type": "login",
+    "device": "mobile",
+    "metadata": {
+      "ip": "192.168.1.10",
+      "location": "Seattle, WA"
+    },
+    "timestamp": "2025-01-10T14:32:00Z"
+  },
+  {
+    "event_id": "evt_1002",
+    "customer_id": 1,
+    "event_type": "support_ticket",
+    "metadata": {
+      "ticket_id": "TCK-44321",
+      "category": "billing"
+    },
+    "timestamp": "2025-01-11T09:15:00Z"
+  },
+  {
+    "event_id": "evt_1003",
+    "customer_id": 2,
+    "event_type": "device_change",
+    "device": "tablet",
+    "metadata": {
+      "old_device": "mobile",
+      "new_device": "tablet"
+    },
+    "timestamp": "2025-01-12T18:45:00Z"
+  }
+]

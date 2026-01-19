@@ -1,0 +1,26 @@
+# Virtual environments
+.venv/
+.venv-analytics/
+
+# Environment variables
+.env
+
+# DuckDB warehouse files
+warehouse/
+*.duckdb
+
+# Raw extracted data
+raw/
+
+# dbt artifacts
+target/
+dbt_packages/
+logs/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS junk
+.DS_Store
+Thumbs.db
