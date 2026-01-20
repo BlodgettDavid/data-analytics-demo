@@ -15,6 +15,9 @@ def main():
     # Connect to DuckDB
     con = duckdb.connect(warehouse_path)
 
+    # Create the raw schema once
+    con.execute("CREATE SCHEMA IF NOT EXISTS raw;")
+
     # Load each Parquet file into DuckDB
     tables = {
         "customers": "customers.parquet",
@@ -28,11 +31,11 @@ def main():
         parquet_path = os.path.join(raw_dir, file_name)
 
         con.execute(f"""
-            CREATE OR REPLACE TABLE {table_name} AS
+            CREATE OR REPLACE TABLE raw.{table_name} AS
             SELECT * FROM read_parquet('{parquet_path}');
         """)
 
-        print(f"Loaded {table_name} → DuckDB")
+        print(f"Loaded raw.{table_name} → DuckDB")
 
     con.close()
 

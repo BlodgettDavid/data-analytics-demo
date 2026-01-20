@@ -1,3 +1,16 @@
+C:\Users\aliso\.dbt\profiles.yml
+(.venv-analytics) C:\Program Files\DuckDB>dir
+ Volume in drive C is Local Disk
+ Volume Serial Number is 8471-B1A1
+
+ Directory of C:\Program Files\DuckDB
+
+01/18/2026  04:12 AM    <DIR>          .
+01/18/2026  04:12 AM    <DIR>          ..
+12/08/2025  02:57 AM        34,414,048 duckdb.exe
+**************************************************
+
+
 
 dbt-core + dbt-duckdb (transformation engine)
 	->pandas + numpy + pyarrow (data handling)
@@ -6,34 +19,94 @@ DuckDB (warehouse)
 streamlit 1.53.0
 *****************************
 
-Extract:
-    MySQL OLTP database
-        - customers
-        - orders
-        - order_items   ← bridge table (many-to-many)
-        - products
-    NoSQL database (MongoDB)
-        - events (JSON documents)
-        ↓
-Load:  (DuckDB warehouse)
-    raw.customers       raw file ← parquet file containing panda dataframe
-    raw.orders          ← parquet file containing panda dataframe
-    raw.order_items     ← parquet file containing panda dataframe
-    raw.products        ← parquet file containing panda dataframe
-    raw.nosql_events    ← JSON stored here (raw, unflattened)
-        ↓
-Transform (technical):  (dbt): after this Tranform completes, all data is releational
-    staging.stg_customers
-    staging.stg_orders
-    staging.stg_order_items
-    staging.stg_products
-    staging.stg_nosql_events   ← flatten JSON here
-        event_type
-        customer_id
-        timestamp
-        device
-        metadata fields
-        ↓
+MySQL: Row‑oriented relational database
+NoSQL: Not releational
+DuckDB: Columnar relational database
+
+
+Data Sources:
+        MySQL OLTP database
+                - customers
+                - orders
+                - order_items   ← bridge table (many-to-many)
+                - products
+        NoSQL database (MongoDB)
+                - events (JSON documents)
+        .csv file? could but would be processed by same architectural pattern
+        we are doing anyways .. -> thus, it does not add anything to
+        architectural understanding
+
+        
+Extract/Load:  (DuckDB warehouse)
+        
+        raw is a schema in the duck_db database
+        
+        (extract_mysql.py)              (load_into_duckdb.py)
+        MySQL→pandas→Parquet            → DuckDB columnar table
+        raw.customers:
+        raw.orders:
+        raw.order_items:
+        raw.products:
+
+        (extract_mongodb.py)               (load_into_duckdb.py)
+        MongoDBJSON→ pandas→Parquet       → DuckDB columnar table
+        raw.nosql_events:
+
+
+Transform (technical) done by (dbt)
+    
+        After staging, MySQL and MongoDB look like they came from the same system.
+        raw and schema are 2 schemas in the duck_db database
+        dbt transofrms: read from raw tables/perform transforms and write to tables in staging schema
+
+
+        raw.customers:          ->              staging.stg_customers
+        raw.orders:             ->              staging.stg_orders
+        raw.order_items:        ->              staging.stg_order_items
+        raw.products:           ->              staging.stg_products
+        raw.nosql_events:       ->              staging.stg_nosql_events
+    
+
+        Transformations done:
+        1) column names get standardized  
+                -Every source system has its own naming quirks. Staging makes them consistent.
+        2) types get fixed  
+                -Raw data often has strings where integers should be, timestamps in weird formats, booleans stored as text, etc.
+
+        3) JSON gets flattened  
+                -This is especially important for your MongoDB events. Staging is where nested structures become clean relational columns.
+        4) weird source quirks get normalized  
+                -Examples:
+                        -inconsistent casing
+                        -null vs empty string
+                        -inconsistent date formats
+                        -inconsistent event names
+                        -missing IDs
+                        -duplicate rows
+        5) naming conventions get applied  
+                -This is where you enforce your project‑wide standards:
+                -snake_case
+                -id suffixes
+                -created_at / updated_at
+                -*_amount, *_count, etc.
+
+        Files involved in the Transformations
+                1) models/sources.yml
+                        This file tells dbt:
+                                -where your raw data lives
+                                -what tables exist
+                                -how to reference them cleanly
+                2) models\staging (one staging model per raw table)
+                        stg_customers.sql
+                        from: C:\Users\aliso\data-analytics-demo> where dbt_project.yml        
+                                dbt run --select stg_customers
+                        stg_nosql_events.sql
+                        stg_orders.sql
+                        stg_order_items.sql
+                        stg_products.sql
+
+
+
 Transform (business):   (dbt)
     marts.dim_customers
     marts.dim_products
