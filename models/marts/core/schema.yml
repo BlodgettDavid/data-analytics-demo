@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: "Conformed customer dimension. One row per customer."
+    columns:
+      - name: customer_id
+        description: "Natural key identifying the customer."
+        tests:
+          - not_null
+          - unique
+
+      - name: name
+        description: "Customer's full name."
+
+      - name: email
+        description: "Customer's email address."
+
+      - name: signup_date
+        description: "Date the customer was created in the system."
+
+      - name: signup_month
+        description: "Month bucket for customer signup."
+
+      - name: signup_year
+        description: "Year the customer signed up."
