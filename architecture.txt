@@ -104,6 +104,9 @@ Transform (technical) done by (dbt)
                                 but we typically dont' do dbt build
                                 on staging files as the "build" runs
                                 tests, and the staging models dont' have tests
+
+                                13:30:54  1 of 1 START sql view model staging.stg_customers ............................ [RUN]
+                                13:30:54  1 of 1 OK created sql view model staging.stg_customers ....................... [OK in 0.11s]
                         
                         data-analytics-demo\models\staging\stg_customers.sql
                         data-analytics-demo\models\staging\stg_nosql_events.sql
@@ -111,11 +114,6 @@ Transform (technical) done by (dbt)
                         data-analytics-demo\models\staging\stg_order_items.sql
                         data-analytics-demo\models\staging\stg_products.sql
                         
-
-
-
-
-
 Transform (business):   (dbt)
     
         Dimensional Tables
@@ -136,9 +134,23 @@ Transform (business):   (dbt)
                                 dbt build --select dim_customers
                         data-analytics-demo\models\marts\core\schema.yml
                                 -we add tests to this file
-                        data-analytics-demo\models\marts\core\dim_customers.sql
+                                        data-analytics-demo\models\marts\core
 
-      
+                        13:34:50  1 of 7 START sql view model staging.fct_order_items ............................ [RUN]
+                        13:34:50  1 of 7 OK created sql view model staging.fct_order_items ....................... [OK in 0.10s]
+                        13:34:50  2 of 7 START test not_null_fct_order_items_order_id ............................ [RUN]
+                        13:34:50  2 of 7 PASS not_null_fct_order_items_order_id .................................. [PASS in 0.07s]
+                        13:34:50  3 of 7 START test not_null_fct_order_items_order_item_id ....................... [RUN]
+                        13:34:50  3 of 7 PASS not_null_fct_order_items_order_item_id ............................. [PASS in 0.02s]
+                        13:34:50  4 of 7 START test not_null_fct_order_items_product_id .......................... [RUN]
+                        13:34:51  4 of 7 PASS not_null_fct_order_items_product_id ................................ [PASS in 0.02s]
+                        13:34:51  5 of 7 START test relationships_fct_order_items_order_id__order_id__ref_fct_orders_  [RUN]
+                        13:34:51  5 of 7 PASS relationships_fct_order_items_order_id__order_id__ref_fct_orders_ .. [PASS in 0.07s]
+                        13:34:51  6 of 7 START test relationships_fct_order_items_product_id__product_id__ref_dim_products_  [RUN]
+                        13:34:51  6 of 7 PASS relationships_fct_order_items_product_id__product_id__ref_dim_products_  [PASS in 0.03s]
+                        13:34:51  7 of 7 START test unique_fct_order_items_order_item_id ......................... [RUN]
+                        13:34:51  7 of 7 PASS unique_fct_order_items_order_item_id ............................... [PASS in 0.04s]
+
         MARTS LAYER (Kimball-style dimensional model)
         ----------------------------------------------
 

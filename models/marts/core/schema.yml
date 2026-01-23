@@ -72,3 +72,39 @@ models:
 
       - name: order_year
         description: "Year the order was placed."
+
+  - name: fct_order_items
+    description: "Fact table representing individual items within each order. One row per order item."
+    columns:
+      - name: order_item_id
+        description: "Degenerate dimension key for the order item."
+        tests:
+          - not_null
+          - unique
+
+      - name: order_id
+        description: "Foreign key to fct_orders."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('fct_orders')
+                field: order_id
+
+      - name: product_id
+        description: "Foreign key to dim_products."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_products')
+                field: product_id
+
+      - name: quantity
+        description: "Number of units purchased for this item."
+
+      - name: unit_price
+        description: "Price per unit at the time of purchase."
+
+      - name: extended_price
+        description: "Total price for this line item (quantity × unit_price)."
