@@ -45,3 +45,30 @@ models:
 
       - name: price
         description: "Current product price, cleaned and type-cast."
+
+  - name: fct_orders
+    description: "Fact table representing customer orders. One row per order."
+    columns:
+      - name: order_id
+        description: "Degenerate dimension key for the order."
+        tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        description: "Foreign key to dim_customers."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_id
+
+      - name: order_date
+        description: "Timestamp when the order was placed."
+
+      - name: order_month
+        description: "Month bucket for order date."
+
+      - name: order_year
+        description: "Year the order was placed."
