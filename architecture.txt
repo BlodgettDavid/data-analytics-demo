@@ -99,6 +99,11 @@ Transform (technical) done by (dbt)
                 2) models\staging (one staging model per raw table)
                         from: C:\Users\aliso\data-analytics-demo> where dbt_project.yml        
                                 dbt run --select stg_customers
+                                or ... dbt build --select stg_customers
+
+                                but we typically dont' do dbt build
+                                on staging files as the "build" runs
+                                tests, and the staging models dont' have tests
                         
                         data-analytics-demo\models\staging\stg_customers.sql
                         data-analytics-demo\models\staging\stg_nosql_events.sql
@@ -106,6 +111,10 @@ Transform (technical) done by (dbt)
                         data-analytics-demo\models\staging\stg_order_items.sql
                         data-analytics-demo\models\staging\stg_products.sql
                         
+
+
+
+
 
 Transform (business):   (dbt)
     
@@ -126,6 +135,7 @@ Transform (business):   (dbt)
         from: C:\Users\aliso\data-analytics-demo> where dbt_project.yml        
                                 dbt build --select dim_customers
                         data-analytics-demo\models\marts\core\schema.yml
+                                -we add tests to this file
                         data-analytics-demo\models\marts\core\dim_customers.sql
 
       
