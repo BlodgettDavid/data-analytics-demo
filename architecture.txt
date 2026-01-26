@@ -331,3 +331,320 @@ Pandas dataframe
 NumPy / tensors
         ↓
 ML model (scikit-learn, XGBoost, PyTorch, TensorFlow)
+
+
+
+
+✔ Staging = “clean the data”
+        dbt run
+✔ Marts = “model the business”
+        dbt build
+                uses schema.yml for the tests
+✔ Staging → dbt run
+✔ Marts → dbt build
+
+
+dbt run builds models, and
+dbt build also builds models, but with tests
+
+**************************************************************
+Alright David — let’s cut through the noise and make this **clean, sharp, and unambiguous**.  
+No dbt‑speak. No hand‑waving. Just the truth.
+
+You’re asking:
+
+**“If I set view, table, or both in dbt_project.yml, what actually happens?”**
+
+Here’s the definitive answer.
+
+---
+
+# 🟦 1) If you specify **ONLY `view`** in `dbt_project.yml`
+
+Example:
+
+```yaml
+models:
+  analytics_demo:
+    +materialized: view
+```
+
+### ✔ What happens  
+**Every model in your project becomes a view** unless you override it inside the model file.
+
+Meaning:
+
+- staging models → views  
+- marts models → views  
+- fact tables → views  
+- dimension tables → views  
+
+Everything is a view.
+
+### ✔ What this means in practice  
+- Nothing is physically stored  
+- Every query recomputes upstream logic  
+- Slow marts  
+- No persistent fact/dim tables  
+- Not how analytics teams work  
+
+This is almost never what you want.
+
+---
+
+# 🟩 2) If you specify **ONLY `table`** in `dbt_project.yml`
+
+Example:
+
+```yaml
+models:
+  analytics_demo:
+    +materialized: table
+```
+
+### ✔ What happens  
+**Every model becomes a table** unless overridden.
+
+Meaning:
+
+- staging models → tables  
+- marts models → tables  
+- fact tables → tables  
+- dimension tables → tables  
+
+Everything is a table.
+
+### ✔ What this means in practice  
+- staging becomes slow and expensive  
+- you store raw-ish cleaned data unnecessarily  
+- you lose the “always up-to-date” nature of views  
+- you rebuild staging tables constantly  
+- wasteful and not industry standard  
+
+This is also almost never what you want.
+
+---
+
+# 🟧 3) If you specify **BOTH** (layer-specific defaults)
+
+Example:
+
+```yaml
+models:
+  analytics_demo:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
+```
+
+### ✔ What happens  
+**This is the correct, industry-standard setup.**
+
+- Everything in `models/staging/` → view  
+- Everything in `models/marts/` → table  
+- You can still override per-model if needed  
+
+### ✔ What this means in practice  
+- staging stays lightweight  
+- marts become fast, persisted tables  
+- your star schema is physical  
+- your cleaning layer is virtual  
+- dbt behaves like a real analytics pipeline  
+
+This is the setup 99% of professional dbt projects use.
+
+---
+
+# ⭐ The clean summary  
+| What you specify | What happens | Good idea? |
+|------------------|--------------|------------|
+| **view only** | Everything becomes a view | ❌ No |
+| **table only** | Everything becomes a table | ❌ No |
+| **both (layer defaults)** | staging = views, marts = tables | ✅ Yes |
+
+---
+
+# 🟦 Why this matters  
+You’re not choosing “view vs table for the whole project.”  
+You’re choosing:
+
+- **views for cleaning**  
+- **tables for business logic**  
+
+That’s the architecture you already understand — dbt just expresses it in its own clunky vocabulary.
+
+---
+
+If you want, I can give you the exact `dbt_project.yml` block that matches the professional pattern so you can drop it in and move on.
+*************************************
+
+Exactly — you’ve distilled it down to the **real rule** that matters.  
+And once you internalize this, the whole materialization system stops feeling mysterious.
+
+Let’s put it in the cleanest, most reliable form possible.
+
+---
+
+# 🟦 The rule  
+**Yes. A model’s SQL file can override anything in `dbt_project.yml`.  
+If it doesn’t override, dbt uses whatever `dbt_project.yml` says.**
+
+That’s the entire hierarchy.
+
+---
+
+# 🟩 The hierarchy (from strongest to weakest)
+
+1. **Model-level config inside the SQL file**  
+   ```sql
+   {{ config(materialized='table') }}
+   ```
+   This ALWAYS wins.
+
+2. **Folder-level config in `dbt_project.yml`**  
+   (e.g., staging = view, marts = table)
+
+3. **Project-level config in `dbt_project.yml`**  
+   (e.g., everything defaults to view)
+
+4. **dbt’s global default**  
+   (view)
+
+If you remember nothing else, remember this:
+
+> **The SQL file is the boss.  
+> The project file is the fallback.**
+
+---
+
+# 🟧 A quick sanity check  
+If you set:
+
+```yaml
+models:
+  my_project:
+    +materialized: view
+```
+
+And inside a model you write:
+
+```sql
+{{ config(materialized='table') }}
+```
+
+Result: **table**  
+Because the model file overrides.
+
+If you don’t put anything in the model file, then:
+
+Result: **view**  
+Because the project file applies.
+
+---
+
+# ⭐ The bottom line  
+You’ve got it exactly right:
+
+- **Yes**, the SQL file can override.  
+- **Yes**, if there’s no override, dbt uses `dbt_project.yml`.  
+- **Yes**, that’s all you need to know to operate confidently.
+
+Everything else is just detail layered on top of that simple rule.
+
+If you want, I can give you a tiny cheat sheet you can drop into your repo so you never have to think about this again.
+
+***********************
+⭐ Yes — the staging layer always runs, regardless of whether downstream models are tables or views
+This is one of dbt’s core guarantees:
+
+If a model depends on another model, dbt will always run the upstream model first.
+
+Materialization (table vs view) does not change that.
+******************************
+
+You’ve got the right instinct, David — and this is the perfect moment to lock in the *real* distinction so it never feels fuzzy again.
+
+Let’s make this crisp, clean, and engineer‑friendly.
+
+---
+
+# ⭐ The truth in one sentence  
+**`dbt build` = `dbt run` + tests + snapshots + seeds**  
+**`dbt run` = only builds models (no tests, no snapshots, no seeds)**
+
+That’s the whole story.
+
+Now let’s break it down so it’s rock‑solid.
+
+---
+
+# 🟦 What `dbt run` actually does  
+`dbt run`:
+
+- compiles models  
+- executes the SQL  
+- materializes them as views/tables/incremental  
+- respects dependencies  
+
+**It does NOT:**
+
+- run tests  
+- run snapshots  
+- run seeds  
+
+It is *only* the transformation step.
+
+Think of it as:
+
+> “Build the DAG, but don’t validate anything.”
+
+---
+
+# 🟩 What `dbt build` actually does  
+`dbt build`:
+
+- runs everything `dbt run` does  
+- **plus** runs tests  
+- **plus** runs snapshots  
+- **plus** runs seeds  
+
+It is the “full pipeline” command.
+
+Think of it as:
+
+> “Build the DAG and validate it.”
+
+---
+
+# 🟧 Why this matters  
+When you’re developing:
+
+- staging models → `dbt run` is enough  
+- marts models → `dbt build` is safer because it runs tests  
+
+When you’re doing CI/CD or preparing for production:
+
+- **always use `dbt build`**  
+  because you want tests to fail early if something breaks.
+
+---
+
+# ⭐ The clean mental model  
+| Command | What it does | When to use |
+|--------|---------------|-------------|
+| **dbt run** | Build models only | Fast iteration during development |
+| **dbt build** | Build models + run tests + snapshots + seeds | Validation, CI/CD, production-like runs |
+
+---
+
+# 🟦 The bottom line  
+Yes — your summary is correct:
+
+- **`dbt build` runs tests**  
+- **`dbt run` does not**  
+
+And now you’ve got the full conceptual picture behind it.
+
+If you want, I can show you the exact workflow most senior analytics engineers use so you know when to run which command without second‑guessing.
+*************************************
