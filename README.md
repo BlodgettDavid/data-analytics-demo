@@ -1,111 +1,207 @@
-# Analytics Demo – dbt + DuckDB
+# 📘 Analytics Engineering Demo — dbt + DuckDB (SQL + NoSQL)
 
-A lightweight, end‑to‑end analytics engineering project demonstrating professional data modeling, testing, and warehouse design using dbt and DuckDB.
+A complete, end‑to‑end analytics engineering project demonstrating professional data modeling, testing, and warehouse design using **dbt**, **DuckDB**, and both **relational** and **NoSQL** data sources.
 
-## Overview
-This project models customer, product, order, and event data into a clean, analytics‑ready warehouse slice. It follows industry‑standard analytics engineering patterns, including a dedicated staging layer, conformed dimensions, fact tables with clearly defined grain, and schema tests for data quality.
+---
 
-The project includes both relational data (customers, orders, products) and a NoSQL event stream stored as JSON. This demonstrates how to integrate semi‑structured data into a dimensional warehouse and flatten nested metadata into a fact table suitable for analytics.
+## 🚀 Overview
 
-## Tech Stack
-- Python  
+This project builds a fully functional analytics warehouse that integrates **relational customer/order data** with a **semi‑structured NoSQL event stream**. It demonstrates how modern analytics engineers design reproducible pipelines, model raw data into clean dimensional structures, and validate data quality using dbt’s testing framework.
+
+The warehouse includes:
+
+- A dedicated staging layer with explicit typing and naming conventions  
+- A Kimball‑style star schema with conformed dimensions  
+- A fact table that flattens nested JSON metadata  
+- Automated schema tests for primary keys, foreign keys, and not‑null constraints  
+- A cost‑free local warehouse powered by DuckDB  
+
+This project is intentionally lightweight but architecturally complete — ideal for interviews, portfolio review, or technical discussion.
+
+---
+
+## 🧱 Architecture
+
+\`\`\`
+Raw Sources (SQL + NoSQL)
+    |
+    v
+Ingestion / Extraction Layer
+    |
+    v
+dbt Staging Models (cleaning, typing, JSON normalization)
+    |
+    v
+Star Schema (dimensions + facts)
+    |
+    v
+Analytics-Ready DuckDB Warehouse
+\`\`\`
+
+---
+
+## 🛠️ Tech Stack
+
 - dbt  
 - DuckDB  
+- Python  
+- SQL + JSON  
+- Kimball dimensional modeling  
 
-## Data Sources
-Relational data originates from a MySQL‑style schema (customers, orders, order_items, products).  
-Event data originates from a NoSQL JSON file (`events.json`) containing semi‑structured customer behavior events such as logins, support tickets, and device changes.  
-Each event includes a metadata object with nested fields (e.g., IP address, location, ticket details, device transitions).  
-The project demonstrates how to flatten and model this metadata into an analytics‑ready fact table.
+---
 
-## Project Structure
+## 📚 Data Sources
 
-### `models/`
-**staging/**  
-Source‑aligned, cleaned, typed views for each raw dataset, including JSON event parsing.
+### **Relational (SQL)**  
+- Customers  
+- Orders  
+- Order items  
+- Products  
 
-**marts/core/**  
-Conformed dimensions (customers, products, event types).
+### **NoSQL (JSON)**  
+A semi‑structured event stream containing logins, support tickets, device changes, location/IP metadata, and nested metadata objects.  
+The project demonstrates how to normalize, flatten, and model this JSON into an analytics‑ready fact table.
 
-**marts/facts/**  
-Fact tables (orders, order items, events).
+---
 
-### `extract/`
-Optional Python scripts used during development to extract relational and NoSQL data and load it into DuckDB. These scripts are not required to run the dbt project but demonstrate the upstream ingestion workflow.
+## 🗂️ Project Structure
 
-### `sql/`
-SQL scripts used to create and seed the initial relational tables during early development. Included for completeness and transparency.
+\`\`\`
+models/
+  staging/
+    stg_customers.sql
+    stg_orders.sql
+    stg_order_items.sql
+    stg_products.sql
+    stg_nosql_events.sql
 
-### `analyses/`
-Optional directory for exploratory SQL queries used during development. Helpful for understanding data validation and early modeling decisions.
+  marts/
+    core/
+      dim_customers.sql
+      dim_products.sql
+      dim_event_types.sql
+    facts/
+      fct_orders.sql
+      fct_order_items.sql
+      fct_events.sql
 
-### `nosql/`
-Contains the `events.json` file used as the NoSQL event source.
+extract/
+  Python ingestion utilities (optional)
 
-## Key Models
+nosql/
+  events.json (NoSQL event source)
 
-- **stg_customers, stg_orders, stg_order_items, stg_products**  
-  Cleaned staging views that standardize types, naming, and structure.
+sql/
+  SQL scripts used during early development
 
-- **stg_nosql_events**  
-  Staging model that loads JSON events, normalizes fields, and exposes metadata for flattening.
+snapshots/
+tests/
+.gitignore
+README.md
+dbt_project.yml
+requirements.txt
+architecture.txt
+\`\`\`
 
-- **dim_customers**  
-  Conformed customer dimension with one row per customer.
+---
 
-- **dim_products**  
-  Conformed product dimension with one row per product.
+## 🧩 Key Models
 
-- **dim_event_types**  
-  Dimension defining the valid event types.
+### **Staging Layer**
+- \`stg_customers\`  
+- \`stg_orders\`  
+- \`stg_order_items\`  
+- \`stg_products\`  
+- \`stg_nosql_events\` — parses JSON, normalizes nested metadata, exposes flattened fields  
 
-- **fct_orders**  
-  Fact table at the order grain.
+### **Dimensions**
+- \`dim_customers\`  
+- \`dim_products\`  
+- \`dim_event_types\`  
 
-- **fct_order_items**  
-  Fact table at the order‑item grain.
+### **Fact Tables**
+- \`fct_orders\`  
+- \`fct_order_items\`  
+- \`fct_events\` — event‑level grain with flattened metadata such as IP, location, ticket details, and device transitions  
 
-- **fct_events**  
-  Fact table at the event grain, including flattened metadata fields such as IP address, location, ticket details, and device transitions.
+---
 
-## Data Quality
-All dimensions and fact tables include schema tests for:
-- primary key uniqueness  
-- not‑null constraints  
-- foreign‑key relationships  
+## 🔍 Data Quality
 
-## Running the Project
+All dimensions and facts include dbt schema tests for:
 
-1. **Create and activate a virtual environment**
-   ```
-   python -m venv .venv-analytics
-   .venv-analytics\Scripts\activate
-   ```
+- Primary key uniqueness  
+- Not‑null constraints  
+- Foreign‑key relationships  
+- Event type validation  
 
-2. **Install dependencies**
-   ```
-   pip install -r requirements.txt
-   ```
+---
 
-3. **Run the project**
-   ```
-   dbt build
-   ```
+## ▶️ Running the Project
 
-This command will:
-- build all staging and marts models  
-- run all schema tests  
+### 1. Create and activate a virtual environment
+
+\`\`\`
+python -m venv .venv-analytics
+.venv-analytics\Scripts\activate
+\`\`\`
+
+### 2. Install dependencies
+
+\`\`\`
+pip install -r requirements.txt
+\`\`\`
+
+### 3. Build the warehouse
+
+\`\`\`
+dbt build
+\`\`\`
+
+This will:
+
+- run all staging models  
+- build all dimensions and facts  
+- execute schema tests  
 - validate the warehouse end‑to‑end  
 
-## Warehouse
-The project uses DuckDB as the local analytical database.  
-All tables and views are created inside the DuckDB file defined in `profiles.yml`.
+---
 
-## Future Enhancements
-- Add example analytical queries  
+## 🗄️ Warehouse
+
+The project uses **DuckDB** as the analytical engine.  
+All tables and views are created inside the DuckDB file defined in \`profiles.yml\`.
+
+This keeps the entire project:
+
+- cost‑free  
+- portable  
+- reproducible  
+- easy to run on any machine  
+
+---
+
+## 🌱 Future Enhancements
+
 - Add a date dimension  
-- Add dashboards or BI layer  
 - Add incremental models for larger datasets  
+- Add example analytical queries  
+- Add a metrics layer or BI dashboard  
+- Add automated ingestion for event streams  
 
-## Purpose
-This project is designed as a portfolio‑ready demonstration of analytics engineering fundamentals, suitable for interviews and technical discussions.
+---
+
+## 🎯 Purpose
+
+This project is designed as a **portfolio‑ready demonstration** of analytics engineering fundamentals.  
+It highlights your ability to:
+
+- integrate SQL + NoSQL sources  
+- design a clean staging layer  
+- build a star schema  
+- flatten nested metadata  
+- enforce data quality  
+- use dbt professionally  
+- architect a reproducible warehouse  
+
+It is intentionally scoped to be small, clear, and technically impressive — ideal for interviews and technical conversations.
