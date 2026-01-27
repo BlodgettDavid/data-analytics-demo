@@ -630,6 +630,15 @@ When you’re doing CI/CD or preparing for production:
 
 ---
 
+How to inspect the staging output
+duckdb
+.open C:/Users/aliso/data-analytics-demo/warehouse/dev.duckdb
+select * from main.stg_nosql_events limit 50;
+
+To run on a mart table (in this case a dimension table)
+dbt run --select dim_event_types
+
+
 # ⭐ The clean mental model  
 | Command | What it does | When to use |
 |--------|---------------|-------------|
@@ -648,3 +657,215 @@ And now you’ve got the full conceptual picture behind it.
 
 If you want, I can show you the exact workflow most senior analytics engineers use so you know when to run which command without second‑guessing.
 *************************************
+
+3. The Visual BreakdownIf your project looks like this: Source -> Staging -> Mart, here is exactly where the testing sits in the sequence:StepAction TypeWhat happens?1Seed/Sourcedbt loads any CSV files or checks source freshness.2Model (Staging)dbt creates the Staging table.3Test (Staging)TESTING HAPPENS HERE. dbt checks the Staging table for nulls/uniques.4Model (Mart)If Step 3 passed, dbt creates the Mart table.5Test (Mart)TESTING HAPPENS HERE. dbt checks the final Mart for business logic.
+*************************************************************
+
+In dbt, the `--select` flag (or its shorthand `-s`) is how you tell dbt to focus on a specific subset of your project rather than running every single model in your warehouse.
+
+When you use `--select staging`, you are telling dbt: **"Only run models that are in the folder named 'staging' OR models that are named 'staging'."**
+
+Here is the breakdown of how dbt interprets that specific command:
+
+---
+
+## 1. Path-Based Selection
+
+Most dbt projects are organized by folders (e.g., `models/staging`, `models/marts`, `models/intermediate`).
+
+* If you have a folder at `models/staging/`, running `--select staging` will execute **every model file inside that folder.**
+* This is the most common way to use it—it's like saying, "Just refresh my raw data layers."
+
+## 2. Name-Based Selection
+
+If you don't have a folder named `staging`, but you have a file named `staging.sql`, dbt will run just that one specific model.
+
+---
+
+## 3. The Power of Operators (The "Graph" Logic)
+
+The real magic happens when you add symbols to that selection. This is likely what you'll use most in your daily work:
+
+| Command | What it does |
+| --- | --- |
+| `--select staging` | Runs **only** the models in the staging folder. |
+| `--select +staging` | Runs staging **AND all of its parents** (upstream). |
+| `--select staging+` | Runs staging **AND all of its children** (downstream). |
+| `--select +staging+` | Runs staging, its parents, **and** its children. |
+
+---
+
+## Why use it with `run` vs `build`?
+
+* **`dbt run --select staging`**: This will go into your staging folder and rebuild all the tables/views there. It will **not** run any tests.
+* **`dbt build --select staging`**: This is usually what people actually want. It will rebuild the staging models **and immediately run the tests** defined in your `schema.yml` for those specific models.
+
+### Quick Example
+
+Imagine you just updated a column in a staging file. You don't want to wait 20 minutes for your entire data warehouse to refresh. You would run:
+`dbt build --select staging+`
+
+This tells dbt: "Rebuild staging, test it, and then rebuild everything that depends on it so my changes flow through to the final tables."
+
+Would you like to know how to exclude certain models while still running the rest of the staging folder?
+****************************************************
+
+This is a *great* question, David — and you’re catching a subtle but important distinction that most people misunderstand for months.
+
+Let’s clear it up cleanly and permanently.
+
+---
+
+# 🔵 The key truth  
+**`dbt run` does *not* run tests.**  
+**`dbt build` runs tests.**
+
+This is the entire distinction.
+
+So when you run:
+
+```
+dbt run
+```
+
+dbt **only**:
+
+- compiles your models  
+- executes the SQL  
+- materializes views/tables  
+
+No tests are executed.
+
+When you run:
+
+```
+dbt build
+```
+
+dbt does **both**:
+
+- `run` (build the models)  
+- `test` (execute schema.yml tests)  
+
+So the tests you’re thinking about — unique, not_null, relationships — are only executed when you run **`dbt build`**, not `dbt run`.
+
+---
+
+# 🟩 So where do the tests live?  
+Exactly as you said:
+
+### **Most tests live in the marts layer.**
+
+Because that’s where:
+
+- business keys are defined  
+- relationships exist  
+- grain is enforced  
+- dimensions and facts must be correct  
+
+So when you run:
+
+```
+dbt build --select marts
+```
+
+you’re running:
+
+- `dim_customers`  
+- `dim_products`  
+- `fct_orders`  
+- `fct_order_items`  
+
+**and all their tests.**
+
+---
+
+# 🟦 What about staging tests?  
+Staging *can* have a few tests, but they’re minimal:
+
+- `not_null` on raw primary keys  
+- `unique` on raw primary keys (if guaranteed by the source)  
+
+These are sanity checks, not business rules.
+
+But the heavy tests — the ones you’re thinking of — absolutely belong in marts.
+
+---
+
+# ⭐ Final clarity  
+### **`dbt run` = build models only**  
+### **`dbt test` = run tests only**  
+### **`dbt build` = run + test (the full pipeline)**  
+
+And yes — the tests that matter most are in your **marts layer**, not staging.
+
+---
+
+If you want, we can now walk through your `core/schema.yml` and add the exact tests each dimension should have.
+
+*********************************
+
+🟩 Why staging has 5 models
+Your raw layer has:
+
+customers
+
+orders
+
+order_items
+
+products
+
+nosql_events
+
+So your staging layer has:
+
+stg_customers
+
+stg_orders
+
+stg_order_items
+
+stg_products
+
+stg_nosql_events
+
+This is intentional.
+Staging is a 1:1 reflection of the raw data.
+
+It’s the “clean room” where you:
+
+cast types
+
+trim text
+
+normalize casing
+
+rename columns
+
+lightly clean data
+
+But you do not change the meaning of the data.
+
+🟧 Why marts has only 4 models
+Your marts layer is not trying to mirror the raw data.
+It’s trying to mirror the business.
+
+And the business has:
+
+Entities (dimensions)
+Customers
+
+Products
+
+Events (facts)
+Orders
+
+Order items
+
+That’s it.
+
+⭐ Final clarity
+The marts layer contains only the models needed to represent the business.
+Your business domain has exactly 4 meaningful concepts.
+Therefore, your marts layer has exactly 4 models.

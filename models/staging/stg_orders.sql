@@ -1,15 +1,16 @@
-{{ config(materialized='view') }}
-
 with source as (
-    select *
+    select
+        order_id,
+        customer_id,
+        order_timestamp
     from {{ source('raw', 'orders') }}
 ),
 
 renamed as (
     select
-        order_id::integer as order_id,
-        customer_id::integer as customer_id,
-        order_timestamp::timestamp as order_date
+        cast(order_id as integer) as order_id,
+        cast(customer_id as integer) as customer_id,
+        cast(order_timestamp as timestamp) as order_date
     from source
 )
 

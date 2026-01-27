@@ -1,5 +1,3 @@
-{{ config(materialized='view') }}
-
 with source as (
     select
         event_id,
@@ -13,12 +11,12 @@ with source as (
 
 renamed as (
     select
-        event_id::integer as event_id,
+        trim(event_id) as event_id,
         trim(event_type) as event_type,
-        customer_id::integer as customer_id,
-        timestamp::timestamp as event_timestamp,
+        cast(customer_id as integer) as customer_id,
+        cast(timestamp as timestamp) as event_timestamp,
         trim(device) as device,
-        metadata  -- keep JSON as-is for now
+        metadata
     from source
 )
 

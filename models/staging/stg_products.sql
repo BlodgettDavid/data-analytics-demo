@@ -1,5 +1,3 @@
-{{ config(materialized='view') }}
-
 with source as (
     select
         product_id,
@@ -11,10 +9,10 @@ with source as (
 
 renamed as (
     select
-        product_id::integer as product_id,
-        trim(product_name) as product_name,
-        trim(category) as category,
-        price::numeric as price
+        cast(product_id as integer) as product_id,
+        lower(trim(product_name)) as product_name,
+        lower(trim(category)) as category,
+        cast(price as numeric(10,2)) as price
     from source
 )
 

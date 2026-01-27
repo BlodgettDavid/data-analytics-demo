@@ -46,6 +46,18 @@ models:
       - name: price
         description: "Current product price, cleaned and type-cast."
 
+  - name: dim_event_types
+    description: "Conformed event type dimension. One row per event type."
+    columns:
+      - name: event_type
+        description: "Natural key identifying the event type."
+        tests:
+          - not_null
+          - unique
+
+      - name: event_type_name
+        description: "Human-readable name for the event type."
+
   - name: fct_orders
     description: "Fact table representing customer orders. One row per order."
     columns:
@@ -108,3 +120,57 @@ models:
 
       - name: extended_price
         description: "Total price for this line item (quantity × unit_price)."
+
+  - name: fct_events
+    description: "Fact table representing customer events. One row per event."
+    columns:
+      - name: event_id
+        description: "Natural key for the event."
+        tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        description: "Natural key for the customer associated with the event."
+
+      - name: customer_key
+        description: "Foreign key to dim_customers (customer_id)."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_id
+
+      - name: event_type
+        description: "Foreign key to dim_event_types (event_type)."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_event_types')
+                field: event_type
+
+      - name: event_timestamp
+        description: "Timestamp when the event occurred."
+
+      - name: device
+        description: "Device associated with the event, when applicable."
+
+      - name: ip_address
+        description: "IP address extracted from event metadata, when available."
+
+      - name: location
+        description: "Location extracted from event metadata, when available."
+
+      - name: ticket_id
+        description: "Support ticket ID associated with the event, when applicable."
+
+      - name: ticket_category
+        description: "Support ticket category, when applicable."
+
+      - name: old_device
+        description: "Previous device in a device_change event, when applicable."
+
+      - name: new_device
+        description: "New device in a device_change event, when applicable."
