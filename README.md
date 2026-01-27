@@ -22,7 +22,7 @@ This project is intentionally lightweight but architecturally complete — ideal
 
 ## 🧱 Architecture
 
-\`\`\`
+```
 Raw Sources (SQL + NoSQL)
     |
     v
@@ -36,7 +36,7 @@ Star Schema (dimensions + facts)
     |
     v
 Analytics-Ready DuckDB Warehouse
-\`\`\`
+```
 
 ---
 
@@ -66,7 +66,7 @@ The project demonstrates how to normalize, flatten, and model this JSON into an 
 
 ## 🗂️ Project Structure
 
-\`\`\`
+```
 models/
   staging/
     stg_customers.sql
@@ -101,28 +101,28 @@ README.md
 dbt_project.yml
 requirements.txt
 architecture.txt
-\`\`\`
+```
 
 ---
 
 ## 🧩 Key Models
 
 ### **Staging Layer**
-- \`stg_customers\`  
-- \`stg_orders\`  
-- \`stg_order_items\`  
-- \`stg_products\`  
-- \`stg_nosql_events\` — parses JSON, normalizes nested metadata, exposes flattened fields  
+- `stg_customers`  
+- `stg_orders`  
+- `stg_order_items`  
+- `stg_products`  
+- `stg_nosql_events` — parses JSON, normalizes nested metadata, exposes flattened fields  
 
 ### **Dimensions**
-- \`dim_customers\`  
-- \`dim_products\`  
-- \`dim_event_types\`  
+- `dim_customers`  
+- `dim_products`  
+- `dim_event_types`  
 
 ### **Fact Tables**
-- \`fct_orders\`  
-- \`fct_order_items\`  
-- \`fct_events\` — event‑level grain with flattened metadata such as IP, location, ticket details, and device transitions  
+- `fct_orders`  
+- `fct_order_items`  
+- `fct_events` — event‑level grain with flattened metadata such as IP, location, ticket details, and device transitions  
 
 ---
 
@@ -141,22 +141,22 @@ All dimensions and facts include dbt schema tests for:
 
 ### 1. Create and activate a virtual environment
 
-\`\`\`
+```
 python -m venv .venv-analytics
 .venv-analytics\Scripts\activate
-\`\`\`
+```
 
 ### 2. Install dependencies
 
-\`\`\`
+```
 pip install -r requirements.txt
-\`\`\`
+```
 
 ### 3. Build the warehouse
 
-\`\`\`
+```
 dbt build
-\`\`\`
+```
 
 This will:
 
@@ -170,7 +170,7 @@ This will:
 ## 🗄️ Warehouse
 
 The project uses **DuckDB** as the analytical engine.  
-All tables and views are created inside the DuckDB file defined in \`profiles.yml\`.
+All tables and views are created inside the DuckDB file defined in `profiles.yml`.
 
 This keeps the entire project:
 
