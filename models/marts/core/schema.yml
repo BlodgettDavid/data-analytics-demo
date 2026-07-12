@@ -9,22 +9,18 @@ models:
         tests:
           - not_null
           - unique
-
       - name: first_name
         description: "Customer's first name."
-
       - name: last_name
         description: "Customer's last name."
-
       - name: email
         description: "Customer's email address, cleaned and lowercased."
-
       - name: signup_date
         description: "Timestamp when the customer was created in the source system."
-
+        tests:
+          - not_null
       - name: signup_month
         description: "Month bucket for customer signup."
-
       - name: signup_year
         description: "Year the customer signed up."
 
@@ -36,15 +32,14 @@ models:
         tests:
           - not_null
           - unique
-
       - name: product_name
         description: "Name of the product."
-
       - name: category
         description: "Product category."
-
       - name: price
         description: "Current product price, cleaned and type-cast."
+        tests:
+          - not_null
 
   - name: dim_event_types
     description: "Conformed event type dimension. One row per event type."
@@ -54,7 +49,6 @@ models:
         tests:
           - not_null
           - unique
-
       - name: event_type_name
         description: "Human-readable name for the event type."
 
@@ -66,22 +60,19 @@ models:
         tests:
           - not_null
           - unique
-
       - name: customer_id
         description: "Foreign key to dim_customers."
         tests:
           - not_null
           - relationships:
-              arguments:
-                to: ref('dim_customers')
-                field: customer_id
-
+              to: ref('dim_customers')
+              field: customer_id
       - name: order_date
         description: "Timestamp when the order was placed."
-
+        tests:
+          - not_null
       - name: order_month
         description: "Month bucket for order date."
-
       - name: order_year
         description: "Year the order was placed."
 
@@ -93,33 +84,32 @@ models:
         tests:
           - not_null
           - unique
-
       - name: order_id
         description: "Foreign key to fct_orders."
         tests:
           - not_null
           - relationships:
-              arguments:
-                to: ref('fct_orders')
-                field: order_id
-
+              to: ref('fct_orders')
+              field: order_id
       - name: product_id
         description: "Foreign key to dim_products."
         tests:
           - not_null
           - relationships:
-              arguments:
-                to: ref('dim_products')
-                field: product_id
-
+              to: ref('dim_products')
+              field: product_id
       - name: quantity
         description: "Number of units purchased for this item."
-
+        tests:
+          - not_null
       - name: unit_price
         description: "Price per unit at the time of purchase."
-
+        tests:
+          - not_null
       - name: extended_price
         description: "Total price for this line item (quantity × unit_price)."
+        tests:
+          - not_null
 
   - name: fct_events
     description: "Fact table representing customer events. One row per event."
@@ -129,48 +119,39 @@ models:
         tests:
           - not_null
           - unique
-
       - name: customer_id
         description: "Natural key for the customer associated with the event."
-
+        tests:
+          - not_null
       - name: customer_key
         description: "Foreign key to dim_customers (customer_id)."
         tests:
           - not_null
           - relationships:
-              arguments:
-                to: ref('dim_customers')
-                field: customer_id
-
+              to: ref('dim_customers')
+              field: customer_id
       - name: event_type
         description: "Foreign key to dim_event_types (event_type)."
         tests:
           - not_null
           - relationships:
-              arguments:
-                to: ref('dim_event_types')
-                field: event_type
-
+              to: ref('dim_event_types')
+              field: event_type
       - name: event_timestamp
         description: "Timestamp when the event occurred."
-
+        tests:
+          - not_null
       - name: device
         description: "Device associated with the event, when applicable."
-
       - name: ip_address
         description: "IP address extracted from event metadata, when available."
-
       - name: location
         description: "Location extracted from event metadata, when available."
-
       - name: ticket_id
         description: "Support ticket ID associated with the event, when applicable."
-
       - name: ticket_category
         description: "Support ticket category, when applicable."
-
       - name: old_device
         description: "Previous device in a device_change event, when applicable."
-
       - name: new_device
         description: "New device in a device_change event, when applicable."

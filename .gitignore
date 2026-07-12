@@ -25,4 +25,11 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-architecture.txt
+# Personal notes
+docs/Notes.txt
+
+# Scratch notebooks (ignore anywhere)
+**/Untitled.ipynb
+
+# Jupyter checkpoints (ignore anywhere)
+**/.ipynb_checkpoints/

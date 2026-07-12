@@ -1,0 +1,6 @@
+event_id,customer_id,event_type,timestamp,device,metadata
+1,101,signup,2025-01-01,laptop,"{}"
+2,102,login,2025-01-02,phone,"{}"
+3,103,purchase,2025-01-03,tablet,"{}"
+4,104,logout,2025-01-04,phone,"{}"
+5,105,login,2025-01-05,laptop,"{}"

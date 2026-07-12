@@ -4,3 +4,6 @@ mysql-connector-python
 pymongo
 pandas
 python-dotenv
+jupyterlab
+ipykernel
+seaborn

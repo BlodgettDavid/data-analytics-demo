@@ -1,3 +1,5 @@
+{{ config(materialized='view') }}
+
 with source as (
     select
         event_id,
@@ -11,8 +13,8 @@ with source as (
 
 renamed as (
     select
-        trim(event_id) as event_id,
-        trim(event_type) as event_type,
+        cast(event_id as integer) as event_id,       -- integers don’t need trim
+        trim(event_type) as event_type,              -- safe to trim strings
         cast(customer_id as integer) as customer_id,
         cast(timestamp as timestamp) as event_timestamp,
         trim(device) as device,

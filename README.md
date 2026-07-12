@@ -2,6 +2,42 @@
 
 A complete, end‑to‑end analytics engineering project demonstrating professional data modeling, testing, and warehouse design using **dbt**, **DuckDB**, and both **relational** and **NoSQL** data sources.
 
+## ⚡ Quickstart
+
+Clone the repo:
+
+```
+git clone https://github.com/BlodgettDavid/data-analytics-demo.git
+cd data-analytics-demo
+```
+
+Create and activate a virtual environment:
+
+```
+python -m venv .venv-analytics
+.venv-analytics\Scripts\activate
+```
+
+Install dependencies:
+
+```
+pip install -r requirements.txt
+```
+
+Build the warehouse:
+
+```
+dbt build
+```
+
+Open the SaaS metrics demo notebook:
+
+```
+jupyter notebook analysis/saas_metrics_demo.ipynb
+```
+
+This will give you a running DuckDB warehouse with staging, dimensions, facts, and a polished SaaS metrics notebook ready to explore.
+
 ---
 
 ## 🚀 Overview
@@ -12,7 +48,7 @@ The warehouse includes:
 
 - A dedicated staging layer with explicit typing and naming conventions  
 - A Kimball‑style star schema with conformed dimensions  
-- A fact table that flattens nested JSON metadata  
+- Fact tables for orders, order items, and events (with JSON flattening)  
 - Automated schema tests for primary keys, foreign keys, and not‑null constraints  
 - A cost‑free local warehouse powered by DuckDB  
 
@@ -26,7 +62,7 @@ This project is intentionally lightweight but architecturally complete — ideal
 Raw Sources (SQL + NoSQL)
     |
     v
-Ingestion / Extraction Layer
+Extraction Layer (Python scripts)
     |
     v
 dbt Staging Models (cleaning, typing, JSON normalization)
@@ -36,6 +72,9 @@ Star Schema (dimensions + facts)
     |
     v
 Analytics-Ready DuckDB Warehouse
+    |
+    v
+Jupyter Notebook (SaaS metrics demo)
 ```
 
 ---
@@ -47,6 +86,7 @@ Analytics-Ready DuckDB Warehouse
 - Python  
 - SQL + JSON  
 - Kimball dimensional modeling  
+- Jupyter Notebook for analysis  
 
 ---
 
@@ -67,40 +107,57 @@ The project demonstrates how to normalize, flatten, and model this JSON into an 
 ## 🗂️ Project Structure
 
 ```
+analysis/
+  saas_metrics_demo.ipynb   # polished notebook with SaaS metrics queries
+
+extract/
+  extract_mysql.py
+  extract_mongodb.py
+  load_into_duckdb.py
+
 models/
+  raw/
+    customers.sql
+    orders.sql
+    order_items.sql
+    products.sql
+    nosql_events.sql
   staging/
     stg_customers.sql
     stg_orders.sql
     stg_order_items.sql
     stg_products.sql
     stg_nosql_events.sql
-
+    stg_orders_seed.sql
   marts/
     core/
       dim_customers.sql
       dim_products.sql
       dim_event_types.sql
+      schema.yml
     facts/
       fct_orders.sql
       fct_order_items.sql
       fct_events.sql
 
-extract/
-  Python ingestion utilities (optional)
+seeds/
+  customers_seed.csv
+  orders_seed.csv
+  order_items_seed.csv
+  products_seed.csv
+  nosql_events_seed.csv
 
 nosql/
-  events.json (NoSQL event source)
+  events.json
 
 sql/
-  SQL scripts used during early development
+  create_tables.sql
+  insert_data.sql
 
 snapshots/
 tests/
-.gitignore
-README.md
-dbt_project.yml
-requirements.txt
-architecture.txt
+docs/
+  Notes.txt (ignored in .gitignore)
 ```
 
 ---
@@ -113,6 +170,7 @@ architecture.txt
 - `stg_order_items`  
 - `stg_products`  
 - `stg_nosql_events` — parses JSON, normalizes nested metadata, exposes flattened fields  
+- `stg_orders_seed` — demo seed for varied monthly order counts  
 
 ### **Dimensions**
 - `dim_customers`  
@@ -121,7 +179,7 @@ architecture.txt
 
 ### **Fact Tables**
 - `fct_orders`  
-- `fct_order_items`  
+- `fct_order_items` — includes extended price and basket size metrics  
 - `fct_events` — event‑level grain with flattened metadata such as IP, location, ticket details, and device transitions  
 
 ---
@@ -167,6 +225,19 @@ This will:
 
 ---
 
+## 📊 SaaS Metrics Notebook
+
+The notebook `analysis/saas_metrics_demo.ipynb` demonstrates:
+
+- Monthly order volume trends  
+- Revenue per order and average basket size  
+- Funnel and retention analysis from NoSQL events  
+- Product mix and category revenue share  
+
+This single notebook serves as the **portfolio showcase** for hiring managers.
+
+---
+
 ## 🗄️ Warehouse
 
 The project uses **DuckDB** as the analytical engine.  
@@ -185,7 +256,6 @@ This keeps the entire project:
 
 - Add a date dimension  
 - Add incremental models for larger datasets  
-- Add example analytical queries  
 - Add a metrics layer or BI dashboard  
 - Add automated ingestion for event streams  
 
@@ -203,5 +273,6 @@ It highlights your ability to:
 - enforce data quality  
 - use dbt professionally  
 - architect a reproducible warehouse  
+- present SaaS metrics in a polished notebook  
 
-It is intentionally scoped to be small, clear, and technically impressive — ideal for interviews and technical conversations.
+It is intentionally scoped to be small, clear, and technically impressive — ideal for technical conversations.
